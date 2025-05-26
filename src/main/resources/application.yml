@@ -1,0 +1,41 @@
+server:
+  forward-headers-strategy: framework
+
+spring:
+  datasource:
+    url: jdbc:postgresql://moneyboss.c7sya24euy7i.eu-north-1.rds.amazonaws.com:5432/moneyboss
+    username: postgres
+    password: 12345678
+    driver-class-name: org.postgresql.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  jackson:
+    time-zone: UTC
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: brkhn2248@gmail.com
+    password: hpcqjlrtizfbrzyp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+logging:
+  level:
+    com.zaxxer.hikari: DEBUG
+    org.springframework.jdbc.datasource: DEBUG
