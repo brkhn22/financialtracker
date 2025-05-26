@@ -19,14 +19,14 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(
+    public ResponseEntity<RegisterResponse> register(
         @RequestBody RegisterRequest request
         ) {
         return ResponseEntity.ok(authenticationService.register(request));
     }
 
     @PostMapping("/activation/resend")
-    public ResponseEntity<AuthenticationResponse> resendEmailToken(
+    public ResponseEntity<RegisterResponse> resendEmailToken(
         @RequestBody ResendRequest request
         ) {
         return ResponseEntity.ok(authenticationService.resendEmailToken(request));

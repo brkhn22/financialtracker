@@ -33,7 +33,7 @@ public class AuthenticationService {
 
     private final String MAIN_PATH = "https://www.bakiceltik.com.tr";
 
-    public AuthenticationResponse register(RegisterRequest request){
+    public RegisterResponse register(RegisterRequest request){
         Validator.isValidEmail(request.getEmail());
         Validator.isValidPassword(request.getPassword());
         if(userRepository.findByEmail(request.getEmail()).isPresent())
@@ -59,13 +59,13 @@ public class AuthenticationService {
         "<a href=\"" + link + "\">" + link + "</a>";
         emailSender.send(request.getEmail(), message);
 
-        return AuthenticationResponse.builder()
-        .token(token)
+        return RegisterResponse.builder()
+        .emailToken(token)
         .build();
 
     }
 
-    public AuthenticationResponse resendEmailToken(ResendRequest request){
+    public RegisterResponse resendEmailToken(ResendRequest request){
         Validator.isValidEmail(request.getEmail());
 
         var user = userRepository.findByEmail(request.getEmail())
@@ -79,8 +79,8 @@ public class AuthenticationService {
         String message = "<p>Click the link to activate your account:</p>" +
         "<a href=\"" + link + "\">" + link + "</a>";
         emailSender.send(request.getEmail(), message);
-        return AuthenticationResponse.builder()
-        .token(token)
+        return RegisterResponse.builder()
+        .emailToken(token)
         .build();
     }
 
