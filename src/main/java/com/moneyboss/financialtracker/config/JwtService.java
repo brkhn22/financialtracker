@@ -21,6 +21,7 @@ public class JwtService {
                                              
     private static final String SECRET_KEY = "ceafa1480550ef5d2acc6eaee833070f6ab8e17ba69266ab95b5a23d496b575b";
 
+
     public String generateToken(UserDetails userDetails){
         return generateToken(new HashMap<>(), userDetails);
     }

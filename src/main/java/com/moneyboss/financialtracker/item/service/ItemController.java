@@ -1,5 +1,6 @@
 package com.moneyboss.financialtracker.item.service;
 
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,12 +20,10 @@ public class ItemController {
 
     private final ItemService itemService;
 
-    @PostMapping("/get-items")
-    public UserItemResponse getUserItems(
-        @RequestBody UserItemRequest request
-    ) {
+    @GetMapping("/get-items")
+    public UserItemResponse getUserItems() {
         // Logic to fetch items for the user
-        return itemService.getItemsByUserId(request);
+        return itemService.getItems();
     }
     
     @PostMapping("/add-user-item")

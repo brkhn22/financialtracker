@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddItemUserRequest {
-    private String token;
-    private Integer userId;
     private String itemName;
     private Double quantity;
     private Double buyingPrice;

@@ -7,9 +7,6 @@ public class RequestValidator {
 
 
     public static void validateAddItemUserRequest(AddItemUserRequest request) {
-        if (request.getUserId() == null || request.getUserId() <= 0) {
-            throw new IllegalUserItemException("User ID must be a positive integer.");
-        }
         if (request.getItemName() == null || request.getItemName().isEmpty()) {
             throw new IllegalUserItemException("Item name cannot be null or empty.");
         }

@@ -54,7 +54,7 @@ public class AuthenticationService {
 
         userRepository.save(user);
         String token = confirmationTokenService.saveConfirmationToken(user);
-        String link = MAIN_PATH;
+        String link = MAIN_PATH+"?token="+token;
         String message = "<p>Click the link to activate your account:</p>" +
         "<a href=\"" + link + "\">" + link + "</a>";
         emailSender.send(request.getEmail(), message);
@@ -75,15 +75,12 @@ public class AuthenticationService {
             throw new IllegalArgumentException("User already active");
 
         String token = confirmationTokenService.saveConfirmationToken(user);
+        String link = MAIN_PATH+"?token="+token;
+        String message = "<p>Click the link to activate your account:</p>" +
+        "<a href=\"" + link + "\">" + link + "</a>";
+        emailSender.send(request.getEmail(), message);
         return AuthenticationResponse.builder()
         .token(token)
-        .build();
-    }
-
-    public AuthenticationResponse activate(String token){
-        String validToken = confirmationTokenService.isTokenValidEmail(token);
-        return AuthenticationResponse.builder()
-        .token(validToken)
         .build();
     }
 
