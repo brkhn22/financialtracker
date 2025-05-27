@@ -24,40 +24,40 @@ public class ConfirmationTokenService {
 
     public String isTokenValidEmail(String token) {
         if (token == null || token.isEmpty())
-        throw new IllegalArgumentException("Token cannot be null or empty");
+        throw new InvalidTokenException("Token cannot be null or empty");
 
         var confirmationToken = confirmationTokenRepository.findByToken(token)
-        .orElseThrow();
+        .orElseThrow(()->(new InvalidTokenException("token not found")));
 
         if (confirmationToken == null)
-            throw new IllegalArgumentException("Token not found");
+            throw new InvalidTokenException("Token not found");
         if (confirmationToken.getConfirmedAt() != null)
-            throw new IllegalArgumentException("Token already confirmed");
+            throw new InvalidTokenException("Token already confirmed");
         if (confirmationToken.getExpiresAt().isBefore(LocalDateTime.now()))
-            throw new IllegalArgumentException("Token expired");
+            throw new InvalidTokenException("Token expired");
         if (confirmationToken.getUser() == null)
-            throw new IllegalArgumentException("User not found");
+            throw new InvalidTokenException("User not found");
         if (confirmationToken.getUser().getActive())
-            throw new IllegalArgumentException("User already active");
+            throw new InvalidTokenException("User already active");
 
         return confirmationToken.getToken();
     }
 
     public String isTokenValidPassword(String token) {
         if (token == null || token.isEmpty())
-        throw new IllegalArgumentException("Token cannot be null or empty");
+        throw new InvalidTokenException("Token cannot be null or empty");
 
         var confirmationToken = confirmationTokenRepository.findByToken(token)
-        .orElseThrow();
+        .orElseThrow(()->(new InvalidTokenException("token not found")));
 
         if (confirmationToken == null)
-            throw new IllegalArgumentException("Token not found");
+            throw new InvalidTokenException("Token not found");
         if (confirmationToken.getConfirmedAt() != null)
-            throw new IllegalArgumentException("Token already confirmed");
+            throw new InvalidTokenException("Token already confirmed");
         if (confirmationToken.getExpiresAt().isBefore(LocalDateTime.now()))
-            throw new IllegalArgumentException("Token expired");
+            throw new InvalidTokenException("Token expired");
         if (confirmationToken.getUser() == null)
-            throw new IllegalArgumentException("User not found");
+            throw new InvalidTokenException("User not found");
 
         return confirmationToken.getToken();
     }
@@ -80,40 +80,40 @@ public class ConfirmationTokenService {
 
     private ConfirmationToken isTokenValidEmailHelper(String token) {
         if (token == null || token.isEmpty())
-            throw new IllegalArgumentException("Token cannot be null or empty");
+            throw new InvalidTokenException("Token cannot be null or empty");
 
         var confirmationToken = confirmationTokenRepository.findByToken(token)
-        .orElseThrow();
+        .orElseThrow(()->(new InvalidTokenException("token not found")));
 
         if (confirmationToken == null)
-            throw new IllegalArgumentException("Token not found");
+            throw new InvalidTokenException("Token not found");
         if (confirmationToken.getConfirmedAt() != null)
-            throw new IllegalArgumentException("Token already confirmed");
+            throw new InvalidTokenException("Token already confirmed");
         if (confirmationToken.getExpiresAt().isBefore(LocalDateTime.now()))
-            throw new IllegalArgumentException("Token expired");
+            throw new InvalidTokenException("Token expired");
         if (confirmationToken.getUser() == null)
-            throw new IllegalArgumentException("User not found");
+            throw new InvalidTokenException("User not found");
         if (confirmationToken.getUser().getActive())
-            throw new IllegalArgumentException("User already active");
+            throw new InvalidTokenException("User already active");
 
         return confirmationToken;
     }
 
     private ConfirmationToken isTokenValidPasswordHelper(String token) {
         if (token == null || token.isEmpty())
-            throw new IllegalArgumentException("Token cannot be null or empty");
+            throw new InvalidTokenException("Token cannot be null or empty");
 
         var confirmationToken = confirmationTokenRepository.findByToken(token)
-        .orElseThrow();
+        .orElseThrow(()->(new InvalidTokenException("token not found")));
 
         if (confirmationToken == null)
-            throw new IllegalArgumentException("Token not found");
+            throw new InvalidTokenException("Token not found");
         if (confirmationToken.getConfirmedAt() != null)
-            throw new IllegalArgumentException("Token already confirmed");
+            throw new InvalidTokenException("Token already confirmed");
         if (confirmationToken.getExpiresAt().isBefore(LocalDateTime.now()))
-            throw new IllegalArgumentException("Token expired");
+            throw new InvalidTokenException("Token expired");
         if (confirmationToken.getUser() == null)
-            throw new IllegalArgumentException("User not found");
+            throw new InvalidTokenException("User not found");
 
         return confirmationToken;
     }

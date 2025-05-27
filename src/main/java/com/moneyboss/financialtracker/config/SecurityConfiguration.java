@@ -36,12 +36,18 @@ public class SecurityConfiguration {
                 .requestMatchers("/v3/api-docs/**").permitAll()
                 .requestMatchers("/v3/api-docs.yaml").permitAll()
                 .requestMatchers("/items/get-items").hasAnyAuthority("user", "admin")
-                .requestMatchers("/items/add-item").hasAuthority("admin")
                 .requestMatchers("/items/add-user-item").hasAnyAuthority("user", "admin")
+                .requestMatchers("/items/get-all-items").hasAnyAuthority( "admin")
+                .requestMatchers("/items/add-item").hasAuthority("admin")
+                .requestMatchers("/items/update-item").hasAuthority("admin")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+                .accessDeniedHandler(new CustomAccessDeniedHandler())
             )
             .authenticationProvider(authenticationProvider)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

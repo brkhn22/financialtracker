@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddItemRequest {
-
-    private String name;
-    private String symbolPath;
+public class UpdateItemResponse {
+    private Item item;
 }

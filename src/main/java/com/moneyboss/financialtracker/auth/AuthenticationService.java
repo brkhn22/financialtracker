@@ -37,10 +37,10 @@ public class AuthenticationService {
         Validator.isValidEmail(request.getEmail());
         Validator.isValidPassword(request.getPassword());
         if(userRepository.findByEmail(request.getEmail()).isPresent())
-            throw new IllegalArgumentException("Email already in use");
+            throw new EmailAlreadyInUseException("Email already in use");
         
         if(request.getRoleName() == null || request.getRoleName().isEmpty())
-            throw new IllegalArgumentException("Role name cannot be empty");
+            throw new IllegalRoleException("Role name cannot be empty");
         var role = roleRepository.findByName(request.getRoleName()).orElseThrow();
         
         var user = User.builder()

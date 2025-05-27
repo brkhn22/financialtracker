@@ -3,6 +3,7 @@ package com.moneyboss.financialtracker.item.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,10 @@ import com.moneyboss.financialtracker.item.AddItemRequest;
 import com.moneyboss.financialtracker.item.AddItemResponse;
 import com.moneyboss.financialtracker.item.Item;
 import com.moneyboss.financialtracker.item.ItemRepository;
+import com.moneyboss.financialtracker.item.ItemResponse;
+import com.moneyboss.financialtracker.item.RequestValidator;
+import com.moneyboss.financialtracker.item.UpdateItemRequest;
+import com.moneyboss.financialtracker.item.UpdateItemResponse;
 import com.moneyboss.financialtracker.item.item_user.AddItemUserRequest;
 import com.moneyboss.financialtracker.item.item_user.AddItemUserResponse;
 import com.moneyboss.financialtracker.item.item_user.ItemUser;
@@ -26,7 +31,38 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
 
-    public UserItemResponse getItems() {
+    public ResponseEntity<UpdateItemResponse> updateItem(UpdateItemRequest request) {
+        RequestValidator.validateUpdateItemRequest(request);
+        
+        Item item = itemRepository.findByName(request.getOriginalName())
+                .orElseThrow(() -> new ItemNotFoundException("Item not found with name: " + request.getOriginalName()));
+        
+        if (request.getNewSymbolPath() != null)
+                item.setSymbolPath(request.getNewSymbolPath());
+        if(request.getNewName() != null) 
+                item.setName(request.getNewName());
+        
+        itemRepository.save(item);
+        
+        return ResponseEntity.ok().body(UpdateItemResponse.builder()
+                .item(item)
+                .build());
+    }
+
+    public ResponseEntity<ItemResponse> getAllItems() {
+        List<Item> items = itemRepository.findAll();
+        if (items.isEmpty()) {
+            throw new ItemNotFoundException("No items found");
+        }
+        
+        ItemResponse response = ItemResponse.builder()
+                .items(items)
+                .build();
+        
+        return ResponseEntity.ok().body(response);
+    }
+
+    public ResponseEntity<UserItemResponse> getItems() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
 
@@ -37,12 +73,14 @@ public class ItemService {
         List<ItemUser> items = itemUserRepository.findByUserId(userId)
                 .orElseThrow(() -> new ItemNotFoundException("No items found for user with ID: " + userId));
 
-        return UserItemResponse.builder()
+        UserItemResponse response = UserItemResponse.builder()
                 .items(items)
-                .build();  
+                .build();
+        
+        return ResponseEntity.ok().body(response);
     }
 
-    public AddItemUserResponse addItemByUserId(AddItemUserRequest request) {
+    public ResponseEntity<AddItemUserResponse> addItemByUserId(AddItemUserRequest request) {
         RequestValidator.validateAddItemUserRequest(request);
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -63,14 +101,16 @@ public class ItemService {
                 .build();
         itemUserRepository.save(itemUser);
         
-        return AddItemUserResponse.builder()
+        AddItemUserResponse response = AddItemUserResponse.builder()
                 .item(item)
                 .quantity(request.getQuantity())
                 .buyingPrice(request.getBuyingPrice())
                 .build();
+        
+        return ResponseEntity.ok().body(response);
     }
 
-    public AddItemResponse addItem(AddItemRequest request) {
+    public ResponseEntity<AddItemResponse> addItem(AddItemRequest request) {
         RequestValidator.validateAddItemRequest(request);
         
         var item = itemRepository.findByName(request.getName());
@@ -85,8 +125,10 @@ public class ItemService {
 
         itemRepository.save(bItem);
         
-        return AddItemResponse.builder()
+        AddItemResponse response = AddItemResponse.builder()
                 .item(bItem)
                 .build();
+        
+        return ResponseEntity.ok().body(response);
     }
 }

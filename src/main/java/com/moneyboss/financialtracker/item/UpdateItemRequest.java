@@ -7,10 +7,11 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class AddItemRequest {
-
-    private String name;
-    private String symbolPath;
+@NoArgsConstructor
+public class UpdateItemRequest {
+    
+    private String originalName;
+    private String newSymbolPath;
+    private String newName;
 }
