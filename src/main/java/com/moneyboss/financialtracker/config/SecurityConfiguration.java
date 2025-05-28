@@ -10,8 +10,14 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -24,6 +30,7 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Add CORS configuration
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -37,7 +44,7 @@ public class SecurityConfiguration {
                 .requestMatchers("/v3/api-docs.yaml").permitAll()
                 .requestMatchers("/items/get-items").hasAnyAuthority("user", "admin")
                 .requestMatchers("/items/add-user-item").hasAnyAuthority("user", "admin")
-                .requestMatchers("/items/get-all-items").hasAnyAuthority( "admin")
+                .requestMatchers("/items/get-all-items").hasAnyAuthority("admin")
                 .requestMatchers("/items/add-item").hasAuthority("admin")
                 .requestMatchers("/items/update-item").hasAuthority("admin")
                 .anyRequest().authenticated()
@@ -51,7 +58,47 @@ public class SecurityConfiguration {
             )
             .authenticationProvider(authenticationProvider)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        
         return http.build();
     }
 
+   @Bean
+public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    
+    configuration.setAllowedOriginPatterns(Arrays.asList(
+        "http://localhost:*",
+        "http://127.0.0.1:*",
+        "https://*.ngrok-free.app",
+        "https://*.ngrok.io"
+    ));
+    
+    configuration.setAllowedMethods(Arrays.asList(
+        "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
+    ));
+    
+    // TRY BEING EXPLICIT FOR DIAGNOSIS:
+    configuration.setAllowedHeaders(Arrays.asList(
+        "Authorization", 
+        "Content-Type", 
+        "Accept", 
+        "Origin", 
+        "Access-Control-Request-Method", 
+        "Access-Control-Request-Headers",
+        "X-Requested-With", // Common header
+        "ngrok-skip-browser-warning" // If your Flutter app might send this
+        // Add any other specific custom headers your Flutter app sends
+    ));
+    // If the above explicit list works, then "*" wasn't catching something,
+    // or a header was being sent that you weren't aware of.
+    // If it still fails, the issue is likely with Origin or Methods.
+    
+    configuration.setAllowCredentials(true);
+    configuration.setMaxAge(3600L);
+    
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    
+    return source;
+    }
 }

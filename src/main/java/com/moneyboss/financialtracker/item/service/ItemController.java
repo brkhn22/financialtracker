@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.moneyboss.financialtracker.item.AddItemRequest;
 import com.moneyboss.financialtracker.item.AddItemResponse;
+import com.moneyboss.financialtracker.item.ItemResponse;
 import com.moneyboss.financialtracker.item.UpdateItemRequest;
 import com.moneyboss.financialtracker.item.UpdateItemResponse;
 import com.moneyboss.financialtracker.item.item_user.AddItemUserRequest;
@@ -27,13 +28,16 @@ public class ItemController {
     public ResponseEntity<UpdateItemResponse> updateItem(
         @RequestBody UpdateItemRequest request
     ) {
-        // Logic to update an item
         return itemService.updateItem(request);
     }
 
     @GetMapping("/get-all-items")
+    public ResponseEntity<ItemResponse> getAllItems() {
+        return itemService.getAllItems();
+    }
+
+    @GetMapping("/get-items")
     public ResponseEntity<UserItemResponse> getUserItems() {
-        // Logic to fetch items for the user
         return itemService.getItems();
     }
     
@@ -41,7 +45,6 @@ public class ItemController {
     public ResponseEntity<AddItemUserResponse> addItemForUser(
         @RequestBody AddItemUserRequest request
     ) {
-        // Logic to add an item for the user
         return itemService.addItemByUserId(request);
     }
 
@@ -49,8 +52,6 @@ public class ItemController {
     public ResponseEntity<AddItemResponse> addItem(
         @RequestBody AddItemRequest request
     ) {
-        // Logic to add a new item
         return itemService.addItem(request);
     }
-    
 }

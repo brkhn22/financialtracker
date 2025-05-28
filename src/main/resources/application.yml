@@ -41,3 +41,6 @@ logging:
   level:
     com.zaxxer.hikari: DEBUG
     org.springframework.jdbc.datasource: DEBUG
+    org.springframework.web.cors: DEBUG
+    org.springframework.security.web.FilterChainProxy: DEBUG
+    org.springframework.security.web.access.intercept.FilterSecurityInterceptor: DEBUG
