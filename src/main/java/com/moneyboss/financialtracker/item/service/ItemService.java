@@ -8,10 +8,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.moneyboss.financialtracker.item.AddItemRequest;
-import com.moneyboss.financialtracker.item.AddItemResponse;
-import com.moneyboss.financialtracker.item.Item;
-import com.moneyboss.financialtracker.item.ItemRepository;
 import com.moneyboss.financialtracker.item.ItemResponse;
+import com.moneyboss.financialtracker.item.Item;
+import com.moneyboss.financialtracker.item.ItemIdRequest;
+import com.moneyboss.financialtracker.item.ItemRepository;
+import com.moneyboss.financialtracker.item.ItemsResponse;
 import com.moneyboss.financialtracker.item.RequestValidator;
 import com.moneyboss.financialtracker.item.UpdateItemRequest;
 import com.moneyboss.financialtracker.item.UpdateItemResponse;
@@ -34,14 +35,16 @@ public class ItemService {
     public ResponseEntity<UpdateItemResponse> updateItem(UpdateItemRequest request) {
         RequestValidator.validateUpdateItemRequest(request);
         
-        Item item = itemRepository.findByName(request.getOriginalName())
-                .orElseThrow(() -> new ItemNotFoundException("Item not found with name: " + request.getOriginalName()));
+        Item item = itemRepository.findById(request.getItemId())
+                .orElseThrow(() -> new IllegalUpdateItemException("Item not found with id: " + request.getItemId()));
         
         if (request.getNewSymbolPath() != null)
                 item.setSymbolPath(request.getNewSymbolPath());
-        if(request.getNewName() != null) 
-                item.setName(request.getNewName());
-        
+        if (request.getNewName() != null && request.getNewName().equals(item.getName())) 
+                throw new IllegalUpdateItemException("New name cannot be the same as the original name");
+        else
+                item.setName(request.getNewName()); 
+                
         itemRepository.save(item);
         
         return ResponseEntity.ok().body(UpdateItemResponse.builder()
@@ -49,13 +52,13 @@ public class ItemService {
                 .build());
     }
 
-    public ResponseEntity<ItemResponse> getAllItems() {
+    public ResponseEntity<ItemsResponse> getAllItems() {
         List<Item> items = itemRepository.findAll();
         if (items.isEmpty()) {
             throw new ItemNotFoundException("No items found");
         }
         
-        ItemResponse response = ItemResponse.builder()
+        ItemsResponse response = ItemsResponse.builder()
                 .items(items)
                 .build();
         
@@ -89,8 +92,8 @@ public class ItemService {
         var user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
 
-        var item = itemRepository.findByName(request.getItemName())
-                .orElseThrow(() -> new ItemNotFoundException("Item not found with name: " + request.getItemName()));
+        var item = itemRepository.findById(request.getItemId())
+                .orElseThrow(() -> new ItemNotFoundException("Item not found with id: " + request.getItemId()));
 
         ItemUser itemUser = ItemUser.builder()
                 .user(user)
@@ -110,7 +113,7 @@ public class ItemService {
         return ResponseEntity.ok().body(response);
     }
 
-    public ResponseEntity<AddItemResponse> addItem(AddItemRequest request) {
+    public ResponseEntity<ItemResponse> addItem(AddItemRequest request) {
         RequestValidator.validateAddItemRequest(request);
         
         var item = itemRepository.findByName(request.getName());
@@ -125,10 +128,21 @@ public class ItemService {
 
         itemRepository.save(bItem);
         
-        AddItemResponse response = AddItemResponse.builder()
+        ItemResponse response = ItemResponse.builder()
                 .item(bItem)
                 .build();
         
         return ResponseEntity.ok().body(response);
+    }
+
+    public ResponseEntity<ItemResponse> deleteItemById (ItemIdRequest request){
+        RequestValidator.validateItemIdRequest(request);
+        
+        Item item = itemRepository.findById(request.getItemId())
+                .orElseThrow(() -> new ItemNotFoundException("Item not found with ID: " + request.getItemId()));
+        itemRepository.delete(item);
+        return ResponseEntity.ok().body(ItemResponse.builder()
+                .item(item)
+                .build());
     }
 }

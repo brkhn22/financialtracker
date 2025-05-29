@@ -85,7 +85,7 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse confirm(ConfirmRequest request){
-        var user = confirmationTokenService.confirmTokenEmail(request.getToken());
+        var user = confirmationTokenService.confirmTokenEmail(request.getEmailToken());
 
         user.setActive(true);
         user.setEnabled(true);

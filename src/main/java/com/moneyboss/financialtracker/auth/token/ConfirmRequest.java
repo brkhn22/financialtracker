@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class ConfirmRequest {
-    private String token;
+    private String emailToken;
 }

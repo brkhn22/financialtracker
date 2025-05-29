@@ -8,8 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.moneyboss.financialtracker.item.AddItemRequest;
-import com.moneyboss.financialtracker.item.AddItemResponse;
 import com.moneyboss.financialtracker.item.ItemResponse;
+import com.moneyboss.financialtracker.item.ItemIdRequest;
+import com.moneyboss.financialtracker.item.ItemsResponse;
 import com.moneyboss.financialtracker.item.UpdateItemRequest;
 import com.moneyboss.financialtracker.item.UpdateItemResponse;
 import com.moneyboss.financialtracker.item.item_user.AddItemUserRequest;
@@ -32,11 +33,11 @@ public class ItemController {
     }
 
     @GetMapping("/get-all-items")
-    public ResponseEntity<ItemResponse> getAllItems() {
+    public ResponseEntity<ItemsResponse> getAllItems() {
         return itemService.getAllItems();
     }
 
-    @GetMapping("/get-items")
+    @GetMapping("/get-items-of-user")
     public ResponseEntity<UserItemResponse> getUserItems() {
         return itemService.getItems();
     }
@@ -49,9 +50,16 @@ public class ItemController {
     }
 
     @PostMapping("/add-item")
-    public ResponseEntity<AddItemResponse> addItem(
+    public ResponseEntity<ItemResponse> addItem(
         @RequestBody AddItemRequest request
     ) {
         return itemService.addItem(request);
+    }
+
+    @PostMapping("/delete-item")
+    public ResponseEntity<ItemResponse> deleteItem(
+        @RequestBody ItemIdRequest request
+    ) {
+        return itemService.deleteItemById(request);
     }
 }

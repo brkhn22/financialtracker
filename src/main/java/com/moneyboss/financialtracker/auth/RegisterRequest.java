@@ -9,6 +9,4 @@ public class RegisterRequest {
     private String email;
     private String password;
     private String roleName;
-    private Boolean enabled = false;
-    private Boolean active = false;
 }
