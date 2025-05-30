@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddItemUserRequest {
-    private Integer itemId;
+    private String itemId;
     private Double quantity;
     private Double buyingPrice;
 

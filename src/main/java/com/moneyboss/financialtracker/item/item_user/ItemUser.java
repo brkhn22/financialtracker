@@ -3,7 +3,6 @@ package com.moneyboss.financialtracker.item.item_user;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.moneyboss.financialtracker.item.Item;
 import com.moneyboss.financialtracker.user.User;
 
 import jakarta.persistence.Column;
@@ -41,12 +40,11 @@ public class ItemUser {
     @Column(name = "inserted_at")
     private LocalDateTime insertedAt;
 
+    @Column(name = "item_id")
+    private String itemId;
+
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     @JsonIgnore
     private User user;
-
-    @ManyToOne
-    @JoinColumn(name = "item_id", referencedColumnName = "id")
-    private Item item;
 }

@@ -7,17 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import com.moneyboss.financialtracker.item.AddItemRequest;
-import com.moneyboss.financialtracker.item.ItemResponse;
-import com.moneyboss.financialtracker.item.Item;
-import com.moneyboss.financialtracker.item.ItemIdRequest;
-import com.moneyboss.financialtracker.item.ItemRepository;
-import com.moneyboss.financialtracker.item.ItemsResponse;
+
+import com.moneyboss.financialtracker.coin.Coin;
+import com.moneyboss.financialtracker.coin.CoinService;
 import com.moneyboss.financialtracker.item.RequestValidator;
-import com.moneyboss.financialtracker.item.UpdateItemRequest;
-import com.moneyboss.financialtracker.item.UpdateItemResponse;
 import com.moneyboss.financialtracker.item.item_user.AddItemUserRequest;
-import com.moneyboss.financialtracker.item.item_user.AddItemUserResponse;
+import com.moneyboss.financialtracker.item.item_user.ItemCoin;
 import com.moneyboss.financialtracker.item.item_user.ItemUser;
 import com.moneyboss.financialtracker.item.item_user.ItemUserRepository;
 import com.moneyboss.financialtracker.user.UserRepository;
@@ -29,43 +24,10 @@ import lombok.RequiredArgsConstructor;
 public class ItemService {
 
     private final ItemUserRepository itemUserRepository;
-    private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final CoinService coinService;
 
-    public ResponseEntity<UpdateItemResponse> updateItem(UpdateItemRequest request) {
-        RequestValidator.validateUpdateItemRequest(request);
-        
-        Item item = itemRepository.findById(request.getItemId())
-                .orElseThrow(() -> new IllegalUpdateItemException("Item not found with id: " + request.getItemId()));
-        
-        if (request.getNewSymbolPath() != null)
-                item.setSymbolPath(request.getNewSymbolPath());
-        if (request.getNewName() != null && request.getNewName().equals(item.getName())) 
-                throw new IllegalUpdateItemException("New name cannot be the same as the original name");
-        else
-                item.setName(request.getNewName()); 
-                
-        itemRepository.save(item);
-        
-        return ResponseEntity.ok().body(UpdateItemResponse.builder()
-                .item(item)
-                .build());
-    }
-
-    public ResponseEntity<ItemsResponse> getAllItems() {
-        List<Item> items = itemRepository.findAll();
-        if (items.isEmpty()) {
-            throw new ItemNotFoundException("No items found");
-        }
-        
-        ItemsResponse response = ItemsResponse.builder()
-                .items(items)
-                .build();
-        
-        return ResponseEntity.ok().body(response);
-    }
-
-    public ResponseEntity<UserItemResponse> getItems() {
+    public ResponseEntity<List<ItemCoin>> getItems() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
 
@@ -76,14 +38,34 @@ public class ItemService {
         List<ItemUser> items = itemUserRepository.findByUserId(userId)
                 .orElseThrow(() -> new ItemNotFoundException("No items found for user with ID: " + userId));
 
-        UserItemResponse response = UserItemResponse.builder()
-                .items(items)
-                .build();
+        var coins = coinService.getAllCoins("usd").getBody();
+
+        List<ItemCoin> itemCoins = items.stream()
+                .map(item -> {
+                    Coin coin = coins.stream()
+                            .filter(c -> c.getId().equals(item.getItemId()))
+                            .findFirst()
+                            .orElseThrow(() -> new RuntimeException("Coin not found for item ID: " + item.getItemId()));
+                    return new ItemCoin(
+                        coin.getId(),
+                        coin.getName(),
+                        coin.getSymbol(),
+                        coin.getImage(),
+                        coin.getCurrentPrice(),
+                        coin.getPriceChangePercentage24h(),
+                        coin.getPriceChange24h(),
+                        coin.getLastUpdated(),
+                        item.getBuyingPrice(),
+                        item.getQuantity(),
+                        item.getInsertedAt()
+                    );
+                })
+                .toList();
         
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.ok().body(itemCoins);
     }
 
-    public ResponseEntity<AddItemUserResponse> addItemByUserId(AddItemUserRequest request) {
+    public ResponseEntity<ItemCoin> addItemByUserId(AddItemUserRequest request) {
         RequestValidator.validateAddItemUserRequest(request);
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -92,57 +74,34 @@ public class ItemService {
         var user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
 
-        var item = itemRepository.findById(request.getItemId())
-                .orElseThrow(() -> new ItemNotFoundException("Item not found with id: " + request.getItemId()));
+        var coin = coinService.getCoinById(request.getItemId(), "usd").getBody();
+        
+        if(coin == null) throw new RuntimeException("Coin is not found!");
+        
+        
 
         ItemUser itemUser = ItemUser.builder()
                 .user(user)
-                .item(item)
+                .itemId(request.getItemId())
                 .quantity(request.getQuantity())
                 .buyingPrice(request.getBuyingPrice())
                 .insertedAt(LocalDateTime.now())
                 .build();
         itemUserRepository.save(itemUser);
         
-        AddItemUserResponse response = AddItemUserResponse.builder()
-                .item(item)
-                .quantity(request.getQuantity())
-                .buyingPrice(request.getBuyingPrice())
-                .build();
-        
-        return ResponseEntity.ok().body(response);
-    }
-
-    public ResponseEntity<ItemResponse> addItem(AddItemRequest request) {
-        RequestValidator.validateAddItemRequest(request);
-        
-        var item = itemRepository.findByName(request.getName());
-        if (item.isPresent()) {
-            throw new IllegalArgumentException("Item with name " + request.getName() + " already exists");
-        }
-
-        Item bItem = Item.builder()
-                .name(request.getName())
-                .symbolPath(request.getSymbolPath())
-                .build();
-
-        itemRepository.save(bItem);
-        
-        ItemResponse response = ItemResponse.builder()
-                .item(bItem)
-                .build();
-        
-        return ResponseEntity.ok().body(response);
-    }
-
-    public ResponseEntity<ItemResponse> deleteItemById (ItemIdRequest request){
-        RequestValidator.validateItemIdRequest(request);
-        
-        Item item = itemRepository.findById(request.getItemId())
-                .orElseThrow(() -> new ItemNotFoundException("Item not found with ID: " + request.getItemId()));
-        itemRepository.delete(item);
-        return ResponseEntity.ok().body(ItemResponse.builder()
-                .item(item)
+        return ResponseEntity.ok().body(ItemCoin.builder()
+                .coinId(coin.getId())
+                .coinName(coin.getName())
+                .coinSymbol(coin.getSymbol())
+                .coinImage(coin.getImage())
+                .coinCurrentPrice(coin.getCurrentPrice())
+                .coinPriceChangePercentage24h(coin.getPriceChangePercentage24h())
+                .coinPriceChange24h(coin.getPriceChange24h())
+                .coinLastUpdated(coin.getLastUpdated())
+                .coinBuyingPrice(request.getBuyingPrice())
+                .coinQuantity(request.getQuantity())
+                .coinInsertedAt(itemUser.getInsertedAt())
                 .build());
     }
+
 }
