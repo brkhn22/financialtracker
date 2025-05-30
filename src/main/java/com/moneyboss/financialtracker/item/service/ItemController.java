@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.moneyboss.financialtracker.item.item_user.AddItemUserRequest;
@@ -22,8 +23,10 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping("/get-items-of-user")
-    public ResponseEntity<List<ItemCoin>> getUserItems() {
-        return itemService.getItems();
+    public ResponseEntity<List<ItemCoin>> getUserItems(
+        @RequestParam(defaultValue = "usd") String currency
+    ) {
+        return itemService.getItems(currency);
     }
     
     @PostMapping("/add-user-item")
@@ -31,6 +34,12 @@ public class ItemController {
         @RequestBody AddItemUserRequest request
     ) {
         return itemService.addItemByUserId(request);
+    }
+
+    @PostMapping("/decrease-item-quantity")
+    public ResponseEntity<DecreaseQuantityResponse> decreaseItemForUser(
+        @RequestBody DecreaseQuantityRequest request){
+            return itemService.decreaseItemQuantity(request);
     }
 
 }

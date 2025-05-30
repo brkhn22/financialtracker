@@ -26,8 +26,11 @@ public class CoinService {
     private final String BASE_URL = "https://api.coingecko.com/api/v3";
     private final RestTemplate restTemplate;
 
-    public ResponseEntity<List<Coin>> getPopularCoins() {
-        String url = BASE_URL + "/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false";
+    public ResponseEntity<List<Coin>> getPopularCoins(String currency) {
+        if (currency == null || currency.trim().isEmpty()) 
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.emptyList());
+        
+        String url = BASE_URL + "/coins/markets?vs_currency="+currency+"&order=market_cap_desc&per_page=10&page=1&sparkline=false";
         
         try {
             log.info("Fetching popular coins from: {}", url);
@@ -136,7 +139,7 @@ public class CoinService {
         }
     }
 
-    public ResponseEntity<SearchCoinResponse> getCoinsByQuery(String query) {
+    public ResponseEntity<SearchCoinResponse> getCoinsByQuery(String query, String currency) {
         if (query == null || query.trim().isEmpty()) {
             log.warn("Empty query provided for coin search");
             return ResponseEntity.ok(SearchCoinResponse.builder()

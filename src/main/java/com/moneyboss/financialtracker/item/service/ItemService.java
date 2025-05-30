@@ -1,6 +1,7 @@
 package com.moneyboss.financialtracker.item.service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class ItemService {
     private final UserRepository userRepository;
     private final CoinService coinService;
 
-    public ResponseEntity<List<ItemCoin>> getItems() {
+    public ResponseEntity<List<ItemCoin>> getItems(String currency) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
 
@@ -38,12 +39,13 @@ public class ItemService {
         List<ItemUser> items = itemUserRepository.findByUserId(userId)
                 .orElseThrow(() -> new ItemNotFoundException("No items found for user with ID: " + userId));
 
-        var coins = coinService.getAllCoins("usd").getBody();
+        var coins = coinService.getAllCoins(currency).getBody();
 
         List<ItemCoin> itemCoins = items.stream()
                 .map(item -> {
                     Coin coin = coins.stream()
                             .filter(c -> c.getId().equals(item.getItemId()))
+                            .sorted((c1, c2) -> c1.getLastUpdated().compareTo(c2.getLastUpdated()))
                             .findFirst()
                             .orElseThrow(() -> new RuntimeException("Coin not found for item ID: " + item.getItemId()));
                     return new ItemCoin(
@@ -61,7 +63,7 @@ public class ItemService {
                     );
                 })
                 .toList();
-        
+        itemCoins.sort((a, b) -> b.getCoinInsertedAt().compareTo(a.getCoinInsertedAt()));
         return ResponseEntity.ok().body(itemCoins);
     }
 
@@ -74,7 +76,7 @@ public class ItemService {
         var user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
 
-        var coin = coinService.getCoinById(request.getItemId(), "usd").getBody();
+        var coin = coinService.getCoinById(request.getItemId(), request.getCurrency()).getBody();
         
         if(coin == null) throw new RuntimeException("Coin is not found!");
         
@@ -104,4 +106,63 @@ public class ItemService {
                 .build());
     }
 
+    public ResponseEntity<DecreaseQuantityResponse> decreaseItemQuantity(DecreaseQuantityRequest request) {
+        RequestValidator.validateDecreaseItemQuantityRequest(request);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        var user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+
+        var itemUser = itemUserRepository.findByItemIdAndUserId(request.getItemId(), user.getId())
+                .orElseThrow(() -> new ItemNotFoundException("Item not found for user with ID: " + user.getId()));
+
+        if (itemUser.size() <= 0) 
+            throw new RuntimeException("There are no items called: " + request.getItemId());
+
+        
+        Double totalQuantity = itemUser.stream()
+                .mapToDouble(ItemUser::getQuantity)
+                .sum();
+        Double quantity = request.getQuantity();
+        if(totalQuantity < quantity)
+                throw new RuntimeException("There are no enough coin");
+        
+        // Sort by insertedAt to ensure we remove the oldest items first
+        Collections.sort(itemUser, (a, b) -> a.getInsertedAt().compareTo(b.getInsertedAt()));
+
+        Coin coin = coinService.getCoinById(request.getItemId(), request.getCurrency()).getBody();
+        Double totalPrice = 0.0;
+        for(int i = 0; i < itemUser.size() && quantity > 0; i++){
+                ItemUser tempItemUser = itemUser.get(i);
+                if (tempItemUser.getQuantity() <= quantity) {
+                        quantity -= tempItemUser.getQuantity();
+                        tempItemUser.setQuantity(0.0);
+                        totalPrice += (coin.getCurrentPrice()-tempItemUser.getBuyingPrice())*tempItemUser.getQuantity();
+                }else{
+                        Double difference = tempItemUser.getQuantity() - quantity;
+                        totalPrice += (coin.getCurrentPrice()-tempItemUser.getBuyingPrice())*difference;
+                        tempItemUser.setQuantity(difference);
+                        quantity = 0.0;
+                }
+        }
+        
+        itemUser.forEach(itemUserTemp -> {
+                if (itemUserTemp.getQuantity() <= 0) 
+                        itemUserRepository.delete(itemUserTemp);
+                else 
+                        itemUserRepository.save(itemUserTemp);
+            
+        });
+
+        return ResponseEntity.ok(
+                DecreaseQuantityResponse
+                .builder()
+                .totalPrice(totalPrice)
+                .quantityRemoved(request.getQuantity())
+                .coin(coin)
+                .build()
+                );
+    }
 }

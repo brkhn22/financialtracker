@@ -41,7 +41,7 @@ public class SecurityConfiguration {
                 .requestMatchers("/swagger-ui.html").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
                 .requestMatchers("/v3/api-docs.yaml").permitAll()
-                .requestMatchers("/coins/**").hasAnyAuthority("user", "admin")
+                .requestMatchers("/coins/**").permitAll()
                 .requestMatchers("/items/get-items").hasAnyAuthority("user", "admin")
                 .requestMatchers("/items/add-user-item").hasAnyAuthority("user", "admin")
                 .requestMatchers("/items/get-all-items").hasAnyAuthority("admin")

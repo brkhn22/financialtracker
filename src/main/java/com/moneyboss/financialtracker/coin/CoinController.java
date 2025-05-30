@@ -19,9 +19,10 @@ public class CoinController {
     private final CoinService coinService;
 
     @GetMapping("/get-popular-coins")
-    public ResponseEntity<?> getPopularCoins() {
+    public ResponseEntity<?> getPopularCoins(
+        @RequestParam(defaultValue = "usd") String currency) {
         try {
-            return coinService.getPopularCoins();
+            return coinService.getPopularCoins(currency);
         } catch (Exception e) {
             // Add explicit error handling
             return ResponseEntity.ok(Map.of(
@@ -32,13 +33,9 @@ public class CoinController {
     }
 
     @GetMapping("/search-coins")
-    public ResponseEntity<SearchCoinResponse> searchCoins(@RequestParam String query) {
-        return coinService.getCoinsByQuery(query);
-    }
-    
-    // Add a test endpoint to verify the issue
-    @GetMapping("/test")
-    public ResponseEntity<Map<String, String>> test() {
-        return ResponseEntity.ok(Map.of("status", "working"));
+    public ResponseEntity<SearchCoinResponse> searchCoins(
+        @RequestParam String query,
+        @RequestParam(defaultValue = "usd") String currency){
+        return coinService.getCoinsByQuery(query, currency);
     }
 }
