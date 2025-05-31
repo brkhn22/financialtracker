@@ -38,4 +38,11 @@ public class CoinController {
         @RequestParam(defaultValue = "usd") String currency){
         return coinService.getCoinsByQuery(query, currency);
     }
+
+    @GetMapping("/get-coin-by-id")
+    public ResponseEntity<Coin> getCoinById(
+        @RequestParam String id,
+        @RequestParam(defaultValue = "usd") String currency) {
+        return coinService.getCoinById(id, currency);
+    }
 }

@@ -63,7 +63,6 @@ public class ItemService {
                     );
                 })
                 .toList();
-        itemCoins.sort((a, b) -> b.getCoinInsertedAt().compareTo(a.getCoinInsertedAt()));
         return ResponseEntity.ok().body(itemCoins);
     }
 

@@ -1,4 +1,4 @@
-package com.moneyboss.financialtracker.user;
+package com.moneyboss.financialtracker.user.debt_user;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserIdRequest {
-    private Integer userId;
+public class DebtIdRequest {
+    private Integer debtId;
 }
