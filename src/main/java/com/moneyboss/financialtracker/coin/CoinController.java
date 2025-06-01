@@ -18,6 +18,15 @@ public class CoinController {
 
     private final CoinService coinService;
 
+    @GetMapping("/fetch-all-coins")
+    public ResponseEntity<List<Coin>> fetchAllCoins(
+        @RequestParam(defaultValue = "usd") String currency,
+        @RequestParam(defaultValue = "250") Integer perPage,
+        @RequestParam(defaultValue = "1") Integer page) {
+        
+        return coinService.fetchAllCoinsByCurrency(currency, page, perPage);
+    }
+
     @GetMapping("/get-popular-coins")
     public ResponseEntity<?> getPopularCoins(
         @RequestParam(defaultValue = "usd") String currency) {
@@ -33,7 +42,7 @@ public class CoinController {
     }
 
     @GetMapping("/search-coins")
-    public ResponseEntity<SearchCoinResponse> searchCoins(
+    public ResponseEntity<List<Coin>> searchCoins(
         @RequestParam String query,
         @RequestParam(defaultValue = "usd") String currency){
         return coinService.getCoinsByQuery(query, currency);

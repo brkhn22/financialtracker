@@ -1,16 +1,31 @@
 server:
   forward-headers-strategy: framework
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 spring:
   datasource:
   #  url: jdbc:postgresql://moneyboss.c7sya24euy7i.eu-north-1.rds.amazonaws.com:5432/moneyboss
-    url: jdbc:postgresql://localhost:5432/moneyboss
+    url: jdbc:postgresql://localhost:5432/moneyboss?characterEncoding=UTF8
     username: postgres
   #  password: 12345678
     password: 123456
     driver-class-name: org.postgresql.Driver
     type: com.zaxxer.hikari.HikariDataSource
-
+    hikari:
+      connection-init-sql: "SET client_encoding TO 'UTF8'"
+  
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+      force-request: true
+      force-response: true
+  
   jpa:
     hibernate:
       ddl-auto: none
@@ -21,15 +36,28 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        connection:
+          characterEncoding: UTF-8
+          useUnicode: true
 
   jackson:
     time-zone: UTC
+    default-property-inclusion: non_null
+    
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 0
+      location: /tmp
+      max-file-size: 1MB
+      max-request-size: 10MB
 
   mail:
     host: smtp.gmail.com
     port: 587
     username: brkhn2248@gmail.com
     password: hpcqjlrtizfbrzyp
+    default-encoding: UTF-8
     properties:
       mail:
         smtp:

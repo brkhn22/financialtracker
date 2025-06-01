@@ -49,6 +49,7 @@ public class SecurityConfiguration {
                 .requestMatchers("/users/update-current-user-finance").hasAnyAuthority("user", "admin")
                 .requestMatchers("/debts/**").hasAnyAuthority( "user", "admin")
                 .requestMatchers("/expenses/**").hasAnyAuthority("user","admin")
+                .requestMatchers("/expense-categories/**").hasAnyAuthority("user", "admin")
                 .requestMatchers("/users/get-by-id").hasAnyAuthority( "admin")
                 .requestMatchers("/users/delete").hasAuthority("admin")
                 .requestMatchers("/users/get-all").hasAuthority("admin")
@@ -56,6 +57,7 @@ public class SecurityConfiguration {
                 .requestMatchers("/items/add-item").hasAuthority("admin")
                 .requestMatchers("/items/update-item").hasAuthority("admin")
                 .requestMatchers("/items/delete-item").hasAuthority("admin")
+                .requestMatchers("/admin/scheduler/**").hasAuthority("admin")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
