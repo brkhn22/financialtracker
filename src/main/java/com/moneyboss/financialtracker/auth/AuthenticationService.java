@@ -6,7 +6,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.moneyboss.financialtracker.auth.token.ConfirmRequest;
 import com.moneyboss.financialtracker.auth.token.ConfirmationTokenService;
 import com.moneyboss.financialtracker.auth.token.ResendRequest;
 import com.moneyboss.financialtracker.config.JwtService;
@@ -31,7 +30,7 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    private final String MAIN_PATH = "https://www.bakiceltik.com.tr";
+    private final String MAIN_PATH = "https://moneyboss-1-env-2.eba-xpbh2wsy.eu-north-1.elasticbeanstalk.com/auth/activation/confirm";
 
     public RegisterResponse register(RegisterRequest request){
         Validator.isValidEmail(request.getEmail());
@@ -60,9 +59,10 @@ public class AuthenticationService {
             <html>
             <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
                 <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h1 style="color: #4CAF50; text-align: center;">MoneyBoss</h1>
                 <h2 style="color: #333333;">Activate Your Account</h2>
                 <p style="font-size: 16px; color: #555555;">
-                    Thank you for signing up! Please click the button below to activate your account:
+                    Thank you for signing up with <strong>MoneyBoss</strong>! To get started, please activate your account by clicking the button below:
                 </p>
                 <p style="text-align: center; margin: 30px 0;">
                     <a href="%s" style="background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-size: 16px;">
@@ -73,11 +73,15 @@ public class AuthenticationService {
                     If the button doesn't work, you can also copy and paste the link below into your browser:
                     <br><a href="%s">%s</a>
                 </p>
+                <hr style="margin-top: 40px;">
+                <p style="font-size: 12px; color: #aaaaaa; text-align: center;">
+                    &copy; %d MoneyBoss. All rights reserved.
+                </p>
                 </div>
             </body>
             </html>
-        """.formatted(link, link, link);
-        // send email
+        """.formatted(link, link, link, java.time.Year.now().getValue());
+
         emailSender.send(request.getEmail(), message);
 
         return RegisterResponse.builder()
@@ -96,30 +100,70 @@ public class AuthenticationService {
             throw new IllegalArgumentException("User already active");
 
         String token = confirmationTokenService.saveConfirmationToken(user);
-        String link = MAIN_PATH+"?token="+token;
-        String message = "<p>Click the link to activate your account:</p>" +
-        "<a href=\"" + link + "\">" + link + "</a>";
+        String link = MAIN_PATH + "?token=" + token;
+
+        String message = """
+            <html>
+            <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
+                <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h1 style="color: #4CAF50; text-align: center;">MoneyBoss</h1>
+                <h2 style="color: #333333;">Activate Your Account</h2>
+                <p style="font-size: 16px; color: #555555;">
+                    Thank you for signing up with <strong>MoneyBoss</strong>! To get started, please activate your account by clicking the button below:
+                </p>
+                <p style="text-align: center; margin: 30px 0;">
+                    <a href="%s" style="background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-size: 16px;">
+                    Activate Account
+                    </a>
+                </p>
+                <p style="font-size: 14px; color: #999999;">
+                    If the button doesn't work, you can also copy and paste the link below into your browser:
+                    <br><a href="%s">%s</a>
+                </p>
+                <hr style="margin-top: 40px;">
+                <p style="font-size: 12px; color: #aaaaaa; text-align: center;">
+                    &copy; %d MoneyBoss. All rights reserved.
+                </p>
+                </div>
+            </body>
+            </html>
+        """.formatted(link, link, link, java.time.Year.now().getValue());
+
         emailSender.send(request.getEmail(), message);
         return RegisterResponse.builder()
         .emailToken(token)
         .build();
     }
 
-    public AuthenticationResponse confirm(ConfirmRequest request){
-        var user = confirmationTokenService.confirmTokenEmail(request.getEmailToken());
+public String confirm(String token) {
+    var user = confirmationTokenService.confirmTokenEmail(token);
 
-        user.setActive(true);
-        user.setEnabled(true);
-        userRepository.save(user);
+    user.setActive(true);
+    user.setEnabled(true);
+    userRepository.save(user);
 
-        // authentication token
-        String jwtToken = jwtService.generateToken(user);
-
-        return AuthenticationResponse.builder()
-        .token(jwtToken)
-        .user(user)
-        .build();
-    }
+    return """
+        <html>
+          <body style="font-family: Arial, sans-serif; background-color: #f0f9f5; padding: 40px;">
+            <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+              <h1 style="color: #4CAF50; text-align: center;">🎉 Welcome to MoneyBoss!</h1>
+              <p style="font-size: 18px; color: #333333; text-align: center; margin-top: 20px;">
+                Your account has been activated successfully.
+              </p>
+              <p style="text-align: center; margin-top: 30px;">
+                <a href="https://www.bakiceltik.com.tr"
+                   style="background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-size: 16px;">
+                  Go to Login
+                </a>
+              </p>
+              <p style="text-align: center; font-size: 12px; color: #aaaaaa; margin-top: 40px;">
+                &copy; %d MoneyBoss. All rights reserved.
+              </p>
+            </div>
+          </body>
+        </html>
+    """.formatted(java.time.Year.now().getValue());
+}
 
     public AuthenticationResponse authenticate(AuthenticationRequest request){
         Validator.isValidEmail(request.getEmail());
