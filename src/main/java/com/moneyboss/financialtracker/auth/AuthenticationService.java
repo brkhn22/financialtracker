@@ -54,9 +54,30 @@ public class AuthenticationService {
 
         userRepository.save(user);
         String token = confirmationTokenService.saveConfirmationToken(user);
-        String link = MAIN_PATH+"?token="+token;
-        String message = "<p>Click the link to activate your account:</p>" +
-        "<a href=\"" + link + "\">" + link + "</a>";
+        String link = MAIN_PATH + "?token=" + token;
+
+        String message = """
+            <html>
+            <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
+                <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h2 style="color: #333333;">Activate Your Account</h2>
+                <p style="font-size: 16px; color: #555555;">
+                    Thank you for signing up! Please click the button below to activate your account:
+                </p>
+                <p style="text-align: center; margin: 30px 0;">
+                    <a href="%s" style="background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-size: 16px;">
+                    Activate Account
+                    </a>
+                </p>
+                <p style="font-size: 14px; color: #999999;">
+                    If the button doesn't work, you can also copy and paste the link below into your browser:
+                    <br><a href="%s">%s</a>
+                </p>
+                </div>
+            </body>
+            </html>
+        """.formatted(link, link, link);
+        // send email
         emailSender.send(request.getEmail(), message);
 
         return RegisterResponse.builder()
