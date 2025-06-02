@@ -8,11 +8,11 @@ server:
 
 spring:
   datasource:
-  #  url: jdbc:postgresql://moneyboss.c7sya24euy7i.eu-north-1.rds.amazonaws.com:5432/moneyboss
-    url: jdbc:postgresql://localhost:5432/moneyboss?characterEncoding=UTF8
+    url: jdbc:postgresql://database-2.c7sya24euy7i.eu-north-1.rds.amazonaws.com:5432/moneyboss?characterEncoding=UTF8
+  #  url: jdbc:postgresql://localhost:5432/moneyboss?characterEncoding=UTF8
     username: postgres
-  #  password: 12345678
-    password: 123456
+    password: A.a12345
+  #  password: 123456
     driver-class-name: org.postgresql.Driver
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
@@ -64,11 +64,3 @@ spring:
           auth: true
           starttls:
             enable: true
-
-logging:
-  level:
-    com.zaxxer.hikari: DEBUG
-    org.springframework.jdbc.datasource: DEBUG
-    org.springframework.web.cors: DEBUG
-    org.springframework.security.web.FilterChainProxy: DEBUG
-    org.springframework.security.web.access.intercept.FilterSecurityInterceptor: DEBUG

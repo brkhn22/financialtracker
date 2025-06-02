@@ -41,7 +41,7 @@ public class AuthenticationService {
         
         if(request.getRoleName() == null || request.getRoleName().isEmpty())
             throw new IllegalRoleException("Role name cannot be empty");
-        var role = roleRepository.findByName(request.getRoleName()).orElseThrow();
+        var role = roleRepository.findByName("user").orElseThrow();
         
         var user = User.builder()
         .name(request.getName())
