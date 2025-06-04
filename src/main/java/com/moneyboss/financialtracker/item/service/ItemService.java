@@ -57,6 +57,7 @@ public class ItemService {
                         coin.getPriceChangePercentage24h(),
                         coin.getPriceChange24h(),
                         coin.getLastUpdated(),
+                        item.getId(),
                         item.getBuyingPrice(),
                         item.getQuantity(),
                         item.getInsertedAt()
@@ -88,7 +89,7 @@ public class ItemService {
                 .buyingPrice(request.getBuyingPrice())
                 .insertedAt(LocalDateTime.now())
                 .build();
-        itemUserRepository.save(itemUser);
+        itemUser = itemUserRepository.save(itemUser);
         
         return ResponseEntity.ok().body(ItemCoin.builder()
                 .coinId(coin.getId())
@@ -101,6 +102,7 @@ public class ItemService {
                 .coinLastUpdated(coin.getLastUpdated())
                 .coinBuyingPrice(request.getBuyingPrice())
                 .coinQuantity(request.getQuantity())
+                .itemId(itemUser.getId())
                 .coinInsertedAt(itemUser.getInsertedAt())
                 .build());
     }
@@ -164,4 +166,30 @@ public class ItemService {
                 .build()
                 );
     }
+
+    public ResponseEntity<ItemUser> deleteItem(ItemUserIdRequest request) {
+        if (request.getId() == null || request.getId() <= 0) {
+            throw new IllegalArgumentException("Item ID must be given correctly.");
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        var user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+        var itemUser = itemUserRepository.findById(request.getId())
+                .orElseThrow(() -> new ItemNotFoundException("Item not found with ID: " + request.getId()));
+
+        if (!itemUser.getUser().getId().equals(user.getId())) 
+                throw new RuntimeException("Item with ID: " + request.getId() + " does not belong to user with ID: " + user.getId());
+        
+        itemUserRepository.delete(itemUser);
+        return ResponseEntity.ok()
+                .body(ItemUser.builder()
+                .id(itemUser.getId())
+                .quantity(itemUser.getQuantity())
+                .buyingPrice(itemUser.getBuyingPrice())
+                .insertedAt(itemUser.getInsertedAt())
+                .itemId(itemUser.getItemId())
+                .build());
+        }
 }

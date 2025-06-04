@@ -26,7 +26,7 @@ public class OpenApiConfig {
 
         return new OpenAPI()
             .info(new Info().title("My API").version("1.0"))
-            .servers(List.of(new Server().url("https://moneyboss-1-env-2.eba-xpbh2wsy.eu-north-1.elasticbeanstalk.com")))
+            .servers(List.of(new Server().url("http://localhost:8080")))
             .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
             .components(new Components()
                 .addSecuritySchemes(securitySchemeName, 

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.moneyboss.financialtracker.item.item_user.AddItemUserRequest;
 import com.moneyboss.financialtracker.item.item_user.ItemCoin;
+import com.moneyboss.financialtracker.item.item_user.ItemUser;
 
 import lombok.RequiredArgsConstructor;
 
@@ -42,4 +43,10 @@ public class ItemController {
             return itemService.decreaseItemQuantity(request);
     }
 
+    @PostMapping("/delete-user-item")
+    public ResponseEntity<ItemUser> deleteItemForUser(
+        @RequestBody ItemUserIdRequest request
+    ) {
+        return itemService.deleteItem(request);
+    }
 }

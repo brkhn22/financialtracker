@@ -44,6 +44,8 @@ public class SecurityConfiguration {
                 .requestMatchers("/coins/**").permitAll()
                 .requestMatchers("/items/get-items").hasAnyAuthority("user", "admin")
                 .requestMatchers("/items/add-user-item").hasAnyAuthority("user", "admin")
+                .requestMatchers("/items/decrease-item-quantity").hasAnyAuthority("user", "admin")
+                .requestMatchers("/items/delete-user-item").hasAnyAuthority("user", "admin")
                 .requestMatchers("/users/get-current-user").hasAnyAuthority("user", "admin")
                 .requestMatchers( "/users/get-current-user-finance").hasAnyAuthority("user", "admin")
                 .requestMatchers("/users/update-current-user-finance").hasAnyAuthority("user", "admin")

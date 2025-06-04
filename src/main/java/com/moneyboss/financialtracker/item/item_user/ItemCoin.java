@@ -30,6 +30,9 @@ public class ItemCoin {
     private Double coinPriceChange24h;
     @JsonProperty("last_updated")
     private LocalDateTime coinLastUpdated;
+
+    @JsonProperty("item_id")
+    private Integer itemId;
     private Double coinBuyingPrice;
     private Double coinQuantity;
     private LocalDateTime coinInsertedAt;

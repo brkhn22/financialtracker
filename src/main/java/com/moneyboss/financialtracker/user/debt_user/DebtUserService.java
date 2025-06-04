@@ -68,6 +68,10 @@ public class DebtUserService {
         var user = userRepository.findByEmail(username)
             .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
 
+        if(request.getRemainingMonths() == null)
+            request.setRemainingMonths((int)(Math.ceil(request.getTotalAmount() / request.getMonthlyPayment())));
+        
+
         DebtUser debt = DebtUser.builder()
             .name(request.getName())
             .category(request.getCategory())
@@ -87,6 +91,7 @@ public class DebtUserService {
             .totalAmount(debt.getTotalAmount())
             .monthlyPayment(debt.getMonthlyPayment())
             .interestRate(debt.getInterestRate())
+            .remainingMonths(debt.getRemainingMonths())
             .insertedAt(debt.getInsertedAt())
             .build();
         return ResponseEntity.ok().body(response);
