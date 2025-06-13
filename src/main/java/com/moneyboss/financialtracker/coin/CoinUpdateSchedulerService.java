@@ -1,5 +1,6 @@
 package com.moneyboss.financialtracker.coin;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
@@ -64,7 +65,7 @@ public class CoinUpdateSchedulerService {
         try {
             scheduledTask = taskScheduler.scheduleAtFixedRate(
                 this::updateCoinsScheduled, 
-                FIXED_RATE
+                Duration.ofMillis(FIXED_RATE)
             );
             isRunning = true;
             log.info("Coin update scheduler started successfully with max page: {}", maxPage.get());
